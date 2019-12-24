@@ -5,7 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Client\" />
+    <Compile Remove="Client\**" />
+    <EmbeddedResource Remove="Client\**" />
+    <None Remove="Client\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FavProducts.Core\FavProducts.Core.csproj" />
+    <ProjectReference Include="..\FavProducts.Domain\FavProducts.Domain.csproj" />
   </ItemGroup>
 
 </Project>

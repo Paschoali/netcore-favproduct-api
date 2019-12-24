@@ -23,7 +23,7 @@ namespace FavProducts.Data.Repository.MySQL
         {
             using (IDbConnection connection = GetConnection())
             {
-                string sql = @"SELECT Id, Name, Email FROM Person;";
+                string sql = @"SELECT Id, Name, Username FROM Person;";
 
                 var personList = await connection.QueryAsync<Person>(sql);
 
@@ -35,7 +35,7 @@ namespace FavProducts.Data.Repository.MySQL
         {
             using (IDbConnection connection = GetConnection())
             {
-                string sql = @"SELECT Id, Name, Email FROM Person WHERE Id = @PersonId;";
+                string sql = @"SELECT Id, Name, Username FROM Person WHERE Id = @PersonId;";
 
                 var person = await connection.QueryAsync<Person>(sql, new { PersonId = personId });
 
@@ -47,7 +47,7 @@ namespace FavProducts.Data.Repository.MySQL
         {
             using (IDbConnection connection = GetConnection())
             {
-                string sql = @"SELECT COUNT(*) FROM Person WHERE Email = @Email;";
+                string sql = @"SELECT COUNT(*) FROM Person WHERE Username = @Username;";
 
                 int count = (await connection.QueryAsync<int>(sql, new { Email = email })).FirstOrDefault();
 
@@ -63,7 +63,7 @@ namespace FavProducts.Data.Repository.MySQL
         {
             using (IDbConnection connection = GetConnection())
             {
-                string sql = @"INSERT INTO Person (Id, Name, Email) VALUES (@PersonId, @Name, @Email);";
+                string sql = @"INSERT INTO Person (Id, Name, Username) VALUES (@PersonId, @Name, @Username);";
 
                 await connection.ExecuteAsync(sql, new { PersonId = person.Id, Name = person.Name, Email = person.Email });
             }
@@ -75,7 +75,7 @@ namespace FavProducts.Data.Repository.MySQL
         {
             using (IDbConnection connection = GetConnection())
             {
-                string sql = @"UPDATE Person SET Name = @Name, Email = @Email WHERE Id = @PersonId;";
+                string sql = @"UPDATE Person SET Name = @Name, Username = @Username WHERE Id = @PersonId;";
 
                 await connection.ExecuteAsync(sql, new { PersonId = person.Id, Name = person.Name, Email = person.Email });
             }

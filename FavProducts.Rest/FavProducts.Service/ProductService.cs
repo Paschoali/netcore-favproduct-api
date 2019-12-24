@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace FavProducts.Service
 {
@@ -11,30 +12,38 @@ namespace FavProducts.Service
     {
         private readonly IProductReadService _productReadService;
         private readonly IProductWriteService _productWriteService;
+        private readonly ILogger _logger;
         private readonly object _lock;
 
-        public ProductService(IProductReadService productReadService, IProductWriteService productWriteService)
+        public ProductService(IProductReadService productReadService, IProductWriteService productWriteService, ILogger logger)
         {
             _productReadService = productReadService;
             _productWriteService = productWriteService;
+            _logger = logger.ForContext<ProductService>();
             _lock = new object();
         }
 
         public async Task AddProductAsync(Guid productId, Guid personId)
         {
-            Product product = await _productReadService.GetProductAsync(productId);
+            _logger.Debug($"Adding ProductId: {productId} to PersonId: {personId}.");
+            Product product = await _productReadService.GetProductInfoAsync(productId);
 
             if (product == null)
             {
-                throw new Exception($"Cannot find this product or it does not exists. Id: {productId}");
+                _logger.Information($"Cannot find this product or it does not exists.Id: { productId}.");
+                throw new ArgumentException($"Cannot find this product or it does not exists. Id: {productId}.");
             }
 
             bool productAlreadyAdded = await _productReadService.GetAsync(productId, personId);
 
             if (productAlreadyAdded)
-                throw new Exception("This product is already in this list");
+            {
+                _logger.Information($"This product is already in this list. ProductId: {productId}, PersonId: {personId}.");
+                throw new ArgumentException("This product is already in this list.");
+            }
 
             await _productWriteService.AddAsync(productId, personId);
+            _logger.Debug($"ProductId {productId} added to PersonId: {personId}.");
         }
 
         public async Task<IEnumerable<Product>> ListPersonProducts(Guid personId)
@@ -42,42 +51,34 @@ namespace FavProducts.Service
             IEnumerable<Guid> productIds = await _productReadService.ListPersonProductIdsAsync(personId);
 
             if (!productIds.Any())
+            {
+                _logger.Debug($"Empty product list. PersonId: {personId}.");
                 return new List<Product>();
+            }
 
             var products = new List<Product>();
 
             var actions = new List<Action>();
-            //var taskList = new List<Task>();
 
             foreach (var productId in productIds)
             {
                 actions.Add(() =>
                 {
-                    Product product = _productReadService.GetProductAsync(productId).Result;
+                    _logger.Debug($"Getting ProductId {productId} information from external service.");
+                    Product product = _productReadService.GetProductInfoAsync(productId).Result;
 
-                    if (product != null)
+                    if (product == null)
                     {
-                        lock (_lock)
-                        {
-                            products.Add(product);
-                        }
+                        _logger.Debug("Can not get product info from external service or it does not exists.");
+                        return;
+                    }
+
+                    lock (_lock)
+                    {
+                        products.Add(product);
                     }
                 });
-
-                //taskList.Add(Task.Run(async () =>
-                //{
-                //    Task<Product> product = _productReadService.GetProductAsync(productId);
-                //    await Task.WhenAll(product);
-
-                //    lock (_lock)
-                //    {
-                //        if (product.Result != null)
-                //            products.Add(product.Result);
-                //    }
-                //}));
             }
-
-            //await Task.WhenAll(taskList);
 
             Parallel.Invoke(actions.ToArray());
 

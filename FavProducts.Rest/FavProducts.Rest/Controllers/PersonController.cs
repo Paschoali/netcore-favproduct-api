@@ -36,7 +36,7 @@ namespace FavProductsAPI.Controllers
 
         [HttpGet]
         [Cached(3600)]
-        public async Task<IEnumerable<PersonResource>> Get()
+        public async Task<IEnumerable<PersonResource>> GetAll()
         {
             IEnumerable<Person> personList = await _personListCommand.ExecuteAsync();
 

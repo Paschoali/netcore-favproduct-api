@@ -1,10 +1,12 @@
-﻿using DryIoc;
+﻿using AutoMapper;
+using DryIoc;
 using DryIoc.Microsoft.DependencyInjection;
 using FavProducts.Command;
 using FavProducts.Core.Command;
 using FavProducts.Core.Configuration;
 using FavProducts.Core.Repository;
 using FavProducts.Core.Services;
+using FavProducts.Data;
 using FavProducts.Data.Repository.MySQL;
 using FavProducts.Rest.Extensions;
 using FavProducts.Service;
@@ -14,32 +16,75 @@ using Flurl.Http;
 using Flurl.Http.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Swashbuckle.AspNetCore.Swagger;
+using SwaggerOptions = FavProducts.Core.Configuration.SwaggerOptions;
 
-namespace FavProductsAPI
+namespace FavProducts.Rest
 {
     public class Startup
     {
         public Startup(IHostingEnvironment env)
         {
-            var builder = new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
-            Configuration = builder.Build();
+            Configuration = config.Build();
+
+            Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(Configuration)
+                .CreateLogger();
         }
 
-        public IConfigurationRoot Configuration { get; }
+        protected IConfigurationRoot Configuration { get; }
+        protected ILogger Logger { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddCors();
+            services.AddDbContext<DataContext>(options =>
+                {
+                    options.UseMySql(Configuration.GetConnectionString("SQL.Write"));
+                });
+
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddAutoMapper(typeof(Startup));
+
+            services.AddSwaggerGen(x =>
+            {
+                x.SwaggerDoc("v1", new Info { Title = "FavProducts API", Version = "v1" });
+
+                var security = new Dictionary<string, IEnumerable<string>>
+                {
+                    { "Bearer", new string[0] }
+                };
+
+                x.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                {
+                    Description = "JWT Authorization header",
+                    Name = "Authorization",
+                    In = "header",
+                    Type = "apiKey"
+                });
+
+                x.AddSecurityRequirement(security);
+            });
 
             var container = new Container().WithDependencyInjectionAdapter(services);
 
@@ -53,7 +98,6 @@ namespace FavProductsAPI
 
             var redisCacheSettings = new CacheSettings();
             Configuration.GetSection(nameof(CacheSettings)).Bind(redisCacheSettings);
-
             container.UseInstance(redisCacheSettings);
             services.AddSingleton(redisCacheSettings);
 
@@ -62,6 +106,51 @@ namespace FavProductsAPI
                 services.AddStackExchangeRedisCache(options => options.Configuration = redisCacheSettings.ConnectionString);
                 services.AddSingleton<ICacheService, CacheService>();
             }
+
+            var jwtSettings = new JwtSettings();
+            Configuration.GetSection(nameof(JwtSettings)).Bind(jwtSettings);
+            container.UseInstance(jwtSettings);
+            services.AddSingleton(jwtSettings);
+
+            services.AddAuthentication(x =>
+                {
+                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(x =>
+                {
+                    x.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = context =>
+                        {
+                            var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
+                            var userId = int.Parse(context.Principal.Identity.Name);
+                            var user = userService.GetById(userId);
+                            if (user == null)
+                            {
+                                context.Fail("Unauthorized");
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                    x.RequireHttpsMetadata = false;
+                    x.SaveToken = true;
+                    x.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.Secret)),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
+                });
+
+            services.AddScoped<IUserService, UserService>();
+
+            #endregion
+
+            #region [ Logging ]
+
+            container.UseInstance(Logger);
 
             #endregion
 
@@ -77,7 +166,6 @@ namespace FavProductsAPI
             container.Register<IProductListCommand, ProductListCommand>();
 
             #endregion
-
 
             #region [ Repository ]
 
@@ -107,10 +195,14 @@ namespace FavProductsAPI
 
             container.Register<IProductService, ProductService>();
 
-            container.Register<IProductReadService, ProductReadService>(Made.Of(() => new ProductReadService(Arg.Of<IProductRepository>("Read"), Arg.Of<IFlurlClient>("FlurlClient.Product"), 3)));
+            int maxAttempts = apiEndpoints.MaxAttempts;
+
+            container.Register<IProductReadService, ProductReadService>(Made.Of(() => new ProductReadService(Arg.Of<IProductRepository>("Read"), Arg.Of<IFlurlClient>("FlurlClient.Product"), maxAttempts, Arg.Of<ILogger>())));
             container.Register<IProductWriteService, ProductWriteService>(Made.Of(() => new ProductWriteService(Arg.Of<IProductRepository>("Write"))));
 
-            container.Register<ICacheService, CacheService>(Made.Of(() => new CacheService(Arg.Of<IDistributedCache>())));
+            container.Register<ICacheService, CacheService>(Made.Of(() => new CacheService(Arg.Of<IDistributedCache>(), Arg.Of<ILogger>())));
+
+            container.Register<IUserService, UserService>();
 
             #endregion
 
@@ -123,6 +215,19 @@ namespace FavProductsAPI
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.ConfigureCustomExceptionMiddleware();
+
+            app.UseAuthentication();
+
+            var swaggerOptions = new SwaggerOptions();
+            Configuration.GetSection(nameof(SwaggerOptions)).Bind(swaggerOptions);
+
+            app.UseSwagger(option => { option.RouteTemplate = swaggerOptions.JsonRoute; });
+
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint(swaggerOptions.UIEndpoint, swaggerOptions.Description);
+            });
+
             app.UseMvc();
         }
     }

@@ -8,13 +8,13 @@
 
   <ItemGroup>
     <Compile Remove="DryIoc\**" />
+    <Compile Remove="wwwroot\**" />
     <Content Remove="DryIoc\**" />
+    <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="DryIoc\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="DryIoc\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <None Remove="wwwroot\**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DryIoc.dll" Version="4.0.7" />
@@ -32,6 +32,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />

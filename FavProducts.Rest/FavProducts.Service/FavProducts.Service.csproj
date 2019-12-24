@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FavProducts.Core\FavProducts.Core.csproj" />
+    <ProjectReference Include="..\FavProducts.Data\FavProducts.Data.csproj" />
     <ProjectReference Include="..\FavProducts.Domain\FavProducts.Domain.csproj" />
   </ItemGroup>
 

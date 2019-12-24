@@ -9,7 +9,7 @@ namespace FavProducts.Data
     {
         #region [ PRIVATE ]
 
-        private object _lockObject = new object();
+        private readonly object _lockObject = new object();
 
         private string ConnectionString { get; set; }
 
