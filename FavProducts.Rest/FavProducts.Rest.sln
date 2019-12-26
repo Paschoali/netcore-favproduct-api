@@ -21,7 +21,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{B61D497A-2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rest", "Rest", "{A53CE0D8-1CEB-44F3-8B3D-97DC660C37AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FavProducts.Infrastructure", "FavProducts.Infrastructure\FavProducts.Infrastructure.csproj", "{F75D98DD-1BB6-4923-AD5F-F5823E01B7A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FavProducts.Infrastructure", "FavProducts.Infrastructure\FavProducts.Infrastructure.csproj", "{F75D98DD-1BB6-4923-AD5F-F5823E01B7A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FavProducts.UnitTest", "FavProducts.UnitTest\FavProducts.UnitTest.csproj", "{EFBC092D-3B7E-43F6-A9EE-806BF225378C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{F75D98DD-1BB6-4923-AD5F-F5823E01B7A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F75D98DD-1BB6-4923-AD5F-F5823E01B7A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F75D98DD-1BB6-4923-AD5F-F5823E01B7A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFBC092D-3B7E-43F6-A9EE-806BF225378C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFBC092D-3B7E-43F6-A9EE-806BF225378C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFBC092D-3B7E-43F6-A9EE-806BF225378C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFBC092D-3B7E-43F6-A9EE-806BF225378C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -70,6 +76,7 @@ Global
 		{C5CBD764-703F-4BAD-BDD7-B64FC3157467} = {931710E3-ED07-47D4-89F0-9DF3CD80EFDF}
 		{A53CE0D8-1CEB-44F3-8B3D-97DC660C37AE} = {931710E3-ED07-47D4-89F0-9DF3CD80EFDF}
 		{F75D98DD-1BB6-4923-AD5F-F5823E01B7A6} = {931710E3-ED07-47D4-89F0-9DF3CD80EFDF}
+		{EFBC092D-3B7E-43F6-A9EE-806BF225378C} = {B61D497A-26F7-409E-A8FD-F67766E5161B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {06F87BC0-BA88-40C0-A8B2-FB54BD3857A1}

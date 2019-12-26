@@ -1,16 +1,16 @@
-﻿using FavProducts.Core.Command;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using FavProducts.Core.Command;
 using FavProducts.Core.Rest.Resource;
 using FavProducts.Core.Rest.Transport;
 using FavProducts.Domain;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace FavProductsAPI.Controllers
+namespace FavProducts.Rest.Controllers
 {
-    [Route("/product")]
+    [Route("[controller]")]
     public class ProductController : ControllerBase
     {
         private readonly IProductPostCommand _productPostCommand;

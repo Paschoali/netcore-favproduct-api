@@ -64,6 +64,35 @@ namespace FavProducts.Rest
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
+            var jwtSettings = new JwtSettings();
+            Configuration.GetSection(nameof(JwtSettings)).Bind(jwtSettings);
+            
+            services.AddSingleton(jwtSettings);
+
+            services.AddAuthentication(x =>
+                {
+                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(x =>
+                {
+                    x.RequireHttpsMetadata = false;
+                    x.SaveToken = true;
+                    x.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.Secret)),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        RequireExpirationTime = false,
+                        ValidateLifetime = true,
+                    };
+                });
+
+            services.AddAuthorization();
+            services.AddScoped<IUserService, UserService>();
+
             services.AddAutoMapper(typeof(Startup));
 
             services.AddSwaggerGen(x =>
@@ -95,6 +124,12 @@ namespace FavProducts.Rest
             var apiEndpoints = new ApiEndpoints();
             Configuration.GetSection(nameof(ApiEndpoints)).Bind(apiEndpoints);
             container.UseInstance(apiEndpoints);
+            services.AddSingleton(apiEndpoints);
+
+            var pagination = new Pagination();
+            Configuration.GetSection(nameof(Pagination)).Bind(pagination);
+            container.UseInstance(pagination);
+            services.AddSingleton(pagination);
 
             var redisCacheSettings = new CacheSettings();
             Configuration.GetSection(nameof(CacheSettings)).Bind(redisCacheSettings);
@@ -106,45 +141,6 @@ namespace FavProducts.Rest
                 services.AddStackExchangeRedisCache(options => options.Configuration = redisCacheSettings.ConnectionString);
                 services.AddSingleton<ICacheService, CacheService>();
             }
-
-            var jwtSettings = new JwtSettings();
-            Configuration.GetSection(nameof(JwtSettings)).Bind(jwtSettings);
-            container.UseInstance(jwtSettings);
-            services.AddSingleton(jwtSettings);
-
-            services.AddAuthentication(x =>
-                {
-                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(x =>
-                {
-                    x.Events = new JwtBearerEvents
-                    {
-                        OnTokenValidated = context =>
-                        {
-                            var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-                            var userId = int.Parse(context.Principal.Identity.Name);
-                            var user = userService.GetById(userId);
-                            if (user == null)
-                            {
-                                context.Fail("Unauthorized");
-                            }
-                            return Task.CompletedTask;
-                        }
-                    };
-                    x.RequireHttpsMetadata = false;
-                    x.SaveToken = true;
-                    x.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.Secret)),
-                        ValidateIssuer = false,
-                        ValidateAudience = false
-                    };
-                });
-
-            services.AddScoped<IUserService, UserService>();
 
             #endregion
 
@@ -190,7 +186,9 @@ namespace FavProducts.Rest
 
             container.Register<IPersonService, PersonService>();
 
-            container.Register<IPersonReadService, PersonReadService>(Made.Of(() => new PersonReadService(Arg.Of<IPersonRepository>("Read"))));
+            int pageSize = pagination.Size;
+
+            container.Register<IPersonReadService, PersonReadService>(Made.Of(() => new PersonReadService(Arg.Of<IPersonRepository>("Read"), pageSize)));
             container.Register<IPersonWriteService, PersonWriteService>(Made.Of(() => new PersonWriteService(Arg.Of<IPersonRepository>("Write"))));
 
             container.Register<IProductService, ProductService>();

@@ -6,7 +6,7 @@ namespace FavProducts.Core.Repository
 {
     public interface IPersonRepository
     {
-        Task<IEnumerable<Person>> ListAsync();
+        Task<IEnumerable<Person>> ListAsync(int pageNumber, int pageSize);
         Task<Person> GetAsync(System.Guid personId);
         Task<bool> GetByEmailAsync(string email);
         Task<Person> CreateAsync(Person person);

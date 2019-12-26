@@ -12,14 +12,17 @@ namespace FavProducts.Service
         private readonly IPersonWriteService _personWriteService;
         private readonly ILogger _logger;
 
-        public PersonService(IPersonReadService personReadService, IPersonWriteService personWriteService, ILogger logger)
+        public PersonService(
+            IPersonReadService personReadService, 
+            IPersonWriteService personWriteService, 
+            ILogger logger)
         {
             _personReadService = personReadService;
             _personWriteService = personWriteService;
             _logger = logger.ForContext<PersonService>();
         }
 
-        public async Task<IEnumerable<Domain.Person>> ListAsync() => await _personReadService.ListAsync();
+        public async Task<IEnumerable<Domain.Person>> ListAsync(int pageNumber) => await _personReadService.ListAsync(pageNumber);
 
         public async Task<Domain.Person> GetAsync(Guid personId) => await _personReadService.GetAsync(personId);
 

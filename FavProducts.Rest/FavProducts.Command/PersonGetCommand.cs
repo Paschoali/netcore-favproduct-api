@@ -20,6 +20,12 @@ namespace FavProducts.Command
 
         public async Task<Person> ExecuteAsync(Guid personId)
         {
+            if (personId == default(Guid))
+            {
+                _logger.Error($"PersonId cannot be empty.");
+                throw new ArgumentException($"personId cannot be empty.");
+            }
+
             return await _personService.GetAsync(personId);
         }
     }

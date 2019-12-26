@@ -6,7 +6,7 @@ namespace FavProducts.Core.Services
 {
     public interface IPersonService
     {
-        Task<IEnumerable<Person>> ListAsync();
+        Task<IEnumerable<Person>> ListAsync(int pageNumber);
         Task<Person> GetAsync(System.Guid personId);
         Task<Person> CreateAsync(Person person);
         Task<Person> UpdateAsync(Person person);

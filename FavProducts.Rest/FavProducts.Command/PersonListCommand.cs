@@ -1,4 +1,5 @@
-﻿using FavProducts.Core.Command;
+﻿using System;
+using FavProducts.Core.Command;
 using FavProducts.Core.Services;
 using FavProducts.Domain;
 using System.Collections.Generic;
@@ -18,9 +19,13 @@ namespace FavProducts.Command
             _logger = logger.ForContext<PersonListCommand>();
         }
 
-        public async Task<IEnumerable<Person>> ExecuteAsync()
+        public async Task<IEnumerable<Person>> ListAsync(int? pageNumber)
         {
-            return await _personService.ListAsync();
+            if (pageNumber != null)
+                return await _personService.ListAsync(pageNumber.Value);
+
+            _logger.Error($"Page number cannot be null");
+            throw new ArgumentNullException($"Page number cannot be null");
         }
     }
 }

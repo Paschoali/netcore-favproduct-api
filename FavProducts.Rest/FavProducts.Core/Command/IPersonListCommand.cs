@@ -6,6 +6,6 @@ namespace FavProducts.Core.Command
 {
     public interface IPersonListCommand
     {
-        Task<IEnumerable<Person>> ExecuteAsync();
+        Task<IEnumerable<Person>> ListAsync(int? pageNumber);
     }
 }

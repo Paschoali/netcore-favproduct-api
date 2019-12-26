@@ -19,13 +19,13 @@ namespace FavProducts.Data.Repository.MySQL
 
         #region [ READ ]
 
-        public async Task<IEnumerable<Person>> ListAsync()
+        public async Task<IEnumerable<Person>> ListAsync(int pageNumber, int pageSize)
         {
             using (IDbConnection connection = GetConnection())
             {
-                string sql = @"SELECT Id, Name, Username FROM Person;";
+                string sql = @"SELECT Id, Name, Email FROM Person LIMIT @PageSize OFFSET @PageNumber;";
 
-                var personList = await connection.QueryAsync<Person>(sql);
+                var personList = await connection.QueryAsync<Person>(sql, new { PageSize = pageSize, PageNumber = (--pageNumber * pageSize) });
 
                 return personList;
             }
@@ -35,7 +35,7 @@ namespace FavProducts.Data.Repository.MySQL
         {
             using (IDbConnection connection = GetConnection())
             {
-                string sql = @"SELECT Id, Name, Username FROM Person WHERE Id = @PersonId;";
+                string sql = @"SELECT Id, Name, Email FROM Person WHERE Id = @PersonId;";
 
                 var person = await connection.QueryAsync<Person>(sql, new { PersonId = personId });
 

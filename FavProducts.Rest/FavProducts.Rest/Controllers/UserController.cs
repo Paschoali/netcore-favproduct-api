@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using FavProducts.Core.Configuration;
-using FavProducts.Core.Rest.Resource;
 using FavProducts.Core.Rest.Transport;
 using FavProducts.Core.Services;
 using FavProducts.Domain;
-using ImTools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace FavProducts.Rest.Controllers
 {
@@ -72,7 +68,7 @@ namespace FavProducts.Rest.Controllers
         [HttpPost("register")]
         public IActionResult Register([FromBody]UserRequest request)
         {
-            var user = _mapper.Map<Domain.User>(request);
+            var user = new User { Username = request.Username };
 
             _userService.Create(user, request.Password);
 

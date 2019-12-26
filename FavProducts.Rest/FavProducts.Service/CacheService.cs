@@ -52,9 +52,9 @@ namespace FavProducts.Service
 
         public async Task RemoveCachedAsync(string cacheKey)
         {
-            _logger.Debug($"Removing cache key: {cacheKey}.");
-
             await _cache.RemoveAsync(cacheKey);
+
+            _logger.Debug($"Cache key: {cacheKey} removed.");
         }
     }
 }

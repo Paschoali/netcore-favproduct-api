@@ -20,13 +20,13 @@ namespace FavProducts.Data
             if (connection.State != ConnectionState.Open)
             {
                 connection.Open();
-
             }
         }
 
         private IDbConnection CreateDbConnection(string connectionString, string providerName)
         {
-            //Check.Argument.IsNotEmpty(connectionString, nameof(connectionString));
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentException($"Error while trying to connect to database.");
 
             DbConnection connection = null;
 

@@ -1,17 +1,20 @@
-﻿using FavProducts.Core.Command;
-using FavProducts.Core.Configuration;
-using FavProducts.Core.Rest.Resource;
-using FavProducts.Domain;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FavProducts.Core.Command;
+using FavProducts.Core.Configuration;
+using FavProducts.Core.Rest.Resource;
+using FavProducts.Core.Rest.Transport;
+using FavProducts.Domain;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace FavProductsAPI.Controllers
+namespace FavProducts.Rest.Controllers
 {
-    [Route("/person")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Route("[controller]")]
     public class PersonController : ControllerBase
     {
         private readonly IPersonListCommand _personListCommand;
@@ -36,9 +39,12 @@ namespace FavProductsAPI.Controllers
 
         [HttpGet]
         [Cached(3600)]
-        public async Task<IEnumerable<PersonResource>> GetAll()
+        public async Task<IEnumerable<PersonResource>> GetAll([FromQuery]PersonListRequest request)
         {
-            IEnumerable<Person> personList = await _personListCommand.ExecuteAsync();
+            var pageNumber = request.Page;
+            pageNumber = pageNumber == 0 ? 1 : pageNumber;
+
+            IEnumerable<Person> personList = await _personListCommand.ListAsync(pageNumber);
 
             IEnumerable<PersonResource> personResourceList = personList.ToList().Select(p => new PersonResource { Id = p.Id, Name = p.Name, Email = p.Email });
 

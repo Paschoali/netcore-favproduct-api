@@ -9,10 +9,15 @@ namespace FavProducts.Service.Read
     public class PersonReadService : IPersonReadService
     {
         private readonly IPersonRepository _personRepository;
+        private readonly int _pageSize;
 
-        public PersonReadService(IPersonRepository personRepository) => _personRepository = personRepository;
+        public PersonReadService(IPersonRepository personRepository, int pageSize)
+        {
+            _personRepository = personRepository;
+            _pageSize = pageSize;
+        }
 
-        public async Task<IEnumerable<Domain.Person>> ListAsync() => await _personRepository.ListAsync();
+        public async Task<IEnumerable<Domain.Person>> ListAsync(int pageNumber) => await _personRepository.ListAsync(pageNumber, _pageSize);
 
         public async Task<Domain.Person> GetAsync(Guid personId) => await _personRepository.GetAsync(personId);
 
