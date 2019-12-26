@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FavProducts.Core.Command;
+using FavProducts.Core.Configuration;
 using FavProducts.Core.Rest.Resource;
 using FavProducts.Core.Rest.Transport;
 using FavProducts.Domain;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FavProducts.Rest.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("[controller]")]
     public class ProductController : ControllerBase
     {
@@ -22,10 +26,14 @@ namespace FavProducts.Rest.Controllers
             _productListCommand = productListCommand;
         }
 
+        [Cached(86400)]
         [HttpGet("{personId}")]
-        public async Task<IEnumerable<ProductResource>> ListByPerson(Guid personId)
+        public async Task<IEnumerable<ProductResource>> ListByPerson(Guid personId, [FromQuery]ProductGetRequest request)
         {
-            IEnumerable<Product> productList = await _productListCommand.ListPersonProducts(personId);
+            var pageNumber = request.Page;
+            pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+
+            IEnumerable<Product> productList = await _productListCommand.ListPersonProducts(personId, pageNumber);
 
             IEnumerable<ProductResource> productResourceList = productList.Select(p => new ProductResource
             {

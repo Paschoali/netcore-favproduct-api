@@ -17,13 +17,13 @@ namespace FavProducts.Rest.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class UserController : Controller
+    public class AuthenticationController : Controller
     {
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly JwtSettings _jwtSettings;
 
-        public UserController(IUserService userService, IMapper mapper, JwtSettings jwtSettings)
+        public AuthenticationController(IUserService userService, IMapper mapper, JwtSettings jwtSettings)
         {
             _userService = userService;
             _mapper = mapper;

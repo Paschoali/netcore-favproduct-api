@@ -30,13 +30,13 @@ namespace FavProducts.Data.Repository.MySQL
             }
         }
 
-        public async Task<IEnumerable<Guid>> ListPersonProductIdsAsync(Guid personId)
+        public async Task<IEnumerable<Guid>> ListPersonProductIdsAsync(Guid personId, int pageNumber, int pageSize)
         {
             using (IDbConnection connection = GetConnection())
             {
-                string sql = "SELECT ProductId FROM ProductPerson WHERE PersonId = @PersonId;";
+                string sql = "SELECT ProductId FROM ProductPerson WHERE PersonId = @PersonId LIMIT @PageSize OFFSET @PageNumber;";
 
-                return await connection.QueryAsync<Guid>(sql, new { PersonId = personId });
+                return await connection.QueryAsync<Guid>(sql, new { PersonId = personId, PageSize = pageSize, PageNumber = (--pageNumber * pageSize) });
             }
         }
 

@@ -10,6 +10,6 @@ namespace FavProducts.Core.Services
         Task<bool> GetAsync(Guid productId, Guid personId);
         Task<Product> GetProductInfoAsync(Guid productId);
         Product GetProductInfo(Guid productId);
-        Task<IEnumerable<Guid>> ListPersonProductIdsAsync(Guid personId);
+        Task<IEnumerable<Guid>> ListPersonProductIdsAsync(Guid personId, int pageNumber);
     }
 }

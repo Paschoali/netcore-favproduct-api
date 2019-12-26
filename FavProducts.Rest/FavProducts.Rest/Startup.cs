@@ -195,7 +195,7 @@ namespace FavProducts.Rest
 
             int maxAttempts = apiEndpoints.MaxAttempts;
 
-            container.Register<IProductReadService, ProductReadService>(Made.Of(() => new ProductReadService(Arg.Of<IProductRepository>("Read"), Arg.Of<IFlurlClient>("FlurlClient.Product"), maxAttempts, Arg.Of<ILogger>())));
+            container.Register<IProductReadService, ProductReadService>(Made.Of(() => new ProductReadService(Arg.Of<IProductRepository>("Read"), Arg.Of<IFlurlClient>("FlurlClient.Product"), maxAttempts, Arg.Of<ILogger>(), pageSize)));
             container.Register<IProductWriteService, ProductWriteService>(Made.Of(() => new ProductWriteService(Arg.Of<IProductRepository>("Write"))));
 
             container.Register<ICacheService, CacheService>(Made.Of(() => new CacheService(Arg.Of<IDistributedCache>(), Arg.Of<ILogger>())));

@@ -42,7 +42,7 @@ namespace FavProducts.Rest.Controllers
         public async Task<IEnumerable<PersonResource>> GetAll([FromQuery]PersonListRequest request)
         {
             var pageNumber = request.Page;
-            pageNumber = pageNumber == 0 ? 1 : pageNumber;
+            pageNumber = pageNumber <= 0 ? 1 : pageNumber;
 
             IEnumerable<Person> personList = await _personListCommand.ListAsync(pageNumber);
 

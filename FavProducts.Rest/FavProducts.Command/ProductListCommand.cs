@@ -19,9 +19,9 @@ namespace FavProducts.Command
             _logger = logger.ForContext<ProductListCommand>();
         }
 
-        public async Task<IEnumerable<Product>> ListPersonProducts(Guid personId)
+        public async Task<IEnumerable<Product>> ListPersonProducts(Guid personId, int pageNumber)
         {
-            return await _productService.ListPersonProducts(personId);
+            return await _productService.ListPersonProducts(personId, pageNumber);
         }
     }
 }

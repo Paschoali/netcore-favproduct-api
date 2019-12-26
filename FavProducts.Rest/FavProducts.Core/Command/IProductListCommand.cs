@@ -7,6 +7,6 @@ namespace FavProducts.Core.Command
 {
     public interface IProductListCommand
     {
-        Task<IEnumerable<Product>> ListPersonProducts(Guid personId);
+        Task<IEnumerable<Product>> ListPersonProducts(Guid personId, int pageNumber);
     }
 }

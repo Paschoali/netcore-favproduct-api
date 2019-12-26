@@ -46,9 +46,9 @@ namespace FavProducts.Service
             _logger.Debug($"ProductId {productId} added to PersonId: {personId}.");
         }
 
-        public async Task<IEnumerable<Product>> ListPersonProducts(Guid personId)
+        public async Task<IEnumerable<Product>> ListPersonProducts(Guid personId, int pageNumber)
         {
-            IEnumerable<Guid> productIds = await _productReadService.ListPersonProductIdsAsync(personId);
+            IEnumerable<Guid> productIds = await _productReadService.ListPersonProductIdsAsync(personId, pageNumber);
 
             if (!productIds.Any())
             {

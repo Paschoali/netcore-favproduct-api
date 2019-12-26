@@ -15,16 +15,18 @@ namespace FavProducts.Service.Read
         private readonly IFlurlClient _flurlClient;
         private readonly int _maxAttempts;
         private readonly ILogger _logger;
+        private readonly int _pageSize;
 
         public ProductReadService(
             IProductRepository productRepository, 
             IFlurlClient flurlClient, 
             int maxAttempts, 
-            ILogger logger)
+            ILogger logger, int pageSize)
         {
             _productRepository = productRepository;
             _flurlClient = flurlClient;
             _maxAttempts = maxAttempts;
+            _pageSize = pageSize;
             _logger = logger.ForContext<ProductReadService>();
         }
 
@@ -74,9 +76,9 @@ namespace FavProducts.Service.Read
             return null;
         }
 
-        public async Task<IEnumerable<Guid>> ListPersonProductIdsAsync(Guid personId)
+        public async Task<IEnumerable<Guid>> ListPersonProductIdsAsync(Guid personId, int pageNumber)
         {
-            return await _productRepository.ListPersonProductIdsAsync(personId);
+            return await _productRepository.ListPersonProductIdsAsync(personId, pageNumber, _pageSize);
         }
     }
 }
